@@ -62,10 +62,13 @@ int main() {
 
 	cout << "Lendo arquivo... ";
 	string linha;
-	list<Teste> regra; // Armazena testes
+	list<Teste> regra; // Armazena testes lidos desde a raiz
 	int numeroDeRegras = 0;
 
-	list< list<Teste> > Regras;
+	list< list<Teste> > RegrasPositivas, RegrasNegativas;
+
+	string classePositiva = ""; // Retem a etiqueta da primeira regra lida.
+	                            // Etiquetas diferentes sao consideradas como 'classe negativa'.
 
 	while (1) {
 
@@ -80,23 +83,10 @@ int main() {
 		getline(arq, linha);
 		while (linha != "") {
 
+			vector<string> partes;
 			if (linha[0] != '|') { // Estamos no nivel da raiz
 				regra.clear();
-				vector<string> partes = split(linha, ' ');
-				Teste novo = {partes[0], partes[2], igual};
-				if (partes[1] == "<=") {
-					novo.relacao = menor;
-				}
-				else if (partes[1] == ">") {
-					novo.relacao = maior;
-				}
-				regra.push_back( novo );
-
-				if (partes.size() > 3) { // Fim de regra
-					//imprimir( regra );
-					Regras.push_back( regra );
-					++ numeroDeRegras;
-				}
+				partes = split(linha, ' ');
 			}
 			else {
 				// Detectar nivel do teste na arvore e ajustar 'regra' de acordo
@@ -114,21 +104,30 @@ int main() {
 				string resto;
 				for (int k=i; k<linha.length(); k++)
 					resto.push_back( linha[k] );
-				vector<string> partes = split(resto, ' ');
-				Teste novo = {partes[0], partes[2], igual};
-				if (partes[1] == "<=") {
-					novo.relacao = menor;
-				}
-				else if (partes[1] == ">") {
-					novo.relacao = maior;
-				}
-				regra.push_back( novo );
+				partes = split(resto, ' ');
+			}
 
-				if (partes.size() > 3) { // Fim de regra
-					//imprimir( regra );
-					Regras.push_back( regra );
-					++ numeroDeRegras;
-				}
+			// Montar novo teste e inseri-lo na regra em construcao
+			Teste novo = {partes[0], partes[2], igual};
+			if (partes[1] == "<=") {
+				novo.relacao = menor;
+			}
+			else if (partes[1] == ">") {
+				novo.relacao = maior;
+			}
+			regra.push_back( novo );
+
+			// Se regra tiver chegado ao fim
+			if (partes.size() > 3) {
+				++ numeroDeRegras;
+				// Reter primeira etiqueta como indicativa da classe positiva
+				if (numeroDeRegras == 1)
+					classePositiva = partes[4];
+				// Determinar classe da regra
+				if (partes[4] == classePositiva)
+					RegrasPositivas.push_back( regra );
+				else
+					RegrasNegativas.push_back( regra );
 			}
 
 			getline(arq, linha);
@@ -140,10 +139,17 @@ int main() {
 
 	cout << "Numero de regras lidas: " << numeroDeRegras << endl << endl;
 
+	cout << endl << "Etiqueta da classe positiva: " << classePositiva << "." << endl;
+
 	// Pos-processamento
+	// Identificar features e atribuir indices aas mesmas
 	map<string,int> variaveis;
 	int indice = 1;
-	for (list<Teste> r : Regras)
+	for (list<Teste> r : RegrasPositivas)
+		for (Teste t : r)
+			if (variaveis[t.variavel] == 0)
+				variaveis[t.variavel] = indice ++;
+	for (list<Teste> r : RegrasNegativas)
 		for (Teste t : r)
 			if (variaveis[t.variavel] == 0)
 				variaveis[t.variavel] = indice ++;
@@ -157,7 +163,10 @@ int main() {
 	}
 
 	// Detectar valores utilizados nas regras
-	for (list<Teste> r : Regras)
+	for (list<Teste> r : RegrasPositivas)
+		for (Teste t : r)
+			valores[ t.variavel ].insert( t.valor );
+	for (list<Teste> r : RegrasNegativas)
 		for (Teste t : r)
 			valores[ t.variavel ].insert( t.valor );
 
@@ -177,34 +186,48 @@ int main() {
 
 	// Exportar dados em formato binario
 	cout << endl << "Regras em formato binario:" << endl;
-	for (list<Teste> r : Regras) {
-		int *vetor = new int[variaveis.size()];
-		for (int i=0; i<variaveis.size(); i++)
-			vetor[i] = 0;
 
-		for (Teste t : r) {
-			if (t.relacao == menor) {
-				vetor[variaveis[t.variavel] - 1] = -1;
-			}
-			else if (t.relacao == maior) {
-				vetor[variaveis[t.variavel] - 1] = +1;
-			}
-			else {
-				if (t.valor == *valores[t.variavel].begin())
+	// Percorrer ambos os conjuntos de regras
+	list< list<Teste> > *Regras;
+	for (int k=0; k<2; k++) {
+		if (k == 0)
+			Regras = &RegrasPositivas;
+		else
+			Regras = &RegrasNegativas;
+
+		for (list<Teste> r : *Regras) {
+			int *vetor = new int[variaveis.size()];
+			for (int i=0; i<variaveis.size(); i++)
+				vetor[i] = 0;
+
+			for (Teste t : r) {
+				if (t.relacao == menor) {
 					vetor[variaveis[t.variavel] - 1] = -1;
-				else
+				}
+				else if (t.relacao == maior) {
 					vetor[variaveis[t.variavel] - 1] = +1;
+				}
+				else {
+					if (t.valor == *valores[t.variavel].begin())
+						vetor[variaveis[t.variavel] - 1] = -1;
+					else
+						vetor[variaveis[t.variavel] - 1] = +1;
+				}
 			}
-		}
 
-		//imprimir( r );
-		for (int i=0; i<variaveis.size(); i++)
-			cout << setw(3) << vetor[i];
-		cout << endl;
-		delete [] vetor;
+			//imprimir( r );
+			for (int i=0; i<variaveis.size(); i++)
+				cout << setw(3) << vetor[i];
+
+			if (k == 0)
+				cout << setw(3) <<  1 << endl; // Regra positiva
+			else
+				cout << setw(3) << -1 << endl; // Regra negativa
+
+			delete [] vetor;
+		}
 	}
 
-
-	//system("pause");
+	system("pause");
 	return 0;
 }
