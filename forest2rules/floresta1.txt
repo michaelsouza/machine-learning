@@ -1,0 +1,253 @@
+=== Run information ===
+
+Scheme:       weka.classifiers.trees.RandomForest -I 5 -K 0 -S 1 -depth 4 -print -num-slots 1
+Relation:     vote
+Instances:    435
+Attributes:   17
+              handicapped-infants
+              water-project-cost-sharing
+              adoption-of-the-budget-resolution
+              physician-fee-freeze
+              el-salvador-aid
+              religious-groups-in-schools
+              anti-satellite-test-ban
+              aid-to-nicaraguan-contras
+              mx-missile
+              immigration
+              synfuels-corporation-cutback
+              education-spending
+              superfund-right-to-sue
+              crime
+              duty-free-exports
+              export-administration-act-south-africa
+              Class
+Test mode:    evaluate on training data
+
+=== Classifier model (full training set) ===
+
+Random forest of 5 trees, each constructed while considering 5 random features.
+Out of bag error: 0.0851
+Max. depth of trees: 4
+
+All the base classifiers: 
+
+
+RandomTree
+==========
+
+adoption-of-the-budget-resolution = n
+|   aid-to-nicaraguan-contras = n
+|   |   education-spending = n
+|   |   |   immigration = n : democrat (12.63/4.01)
+|   |   |   immigration = y : republican (9.54/2)
+|   |   education-spending = y
+|   |   |   immigration = n : republican (60.59/11.66)
+|   |   |   immigration = y : republican (57.99/2)
+|   aid-to-nicaraguan-contras = y
+|   |   synfuels-corporation-cutback = n
+|   |   |   immigration = n : republican (3.72/0.38)
+|   |   |   immigration = y : democrat (13.11/6.47)
+|   |   synfuels-corporation-cutback = y
+|   |   |   physician-fee-freeze = n : democrat (3.07/0.02)
+|   |   |   physician-fee-freeze = y : republican (4.29/2.07)
+adoption-of-the-budget-resolution = y
+|   physician-fee-freeze = n
+|   |   handicapped-infants = n
+|   |   |   crime = n : democrat (53.56/0.12)
+|   |   |   crime = y : democrat (34.44/1.18)
+|   |   handicapped-infants = y : democrat (151.04/0.35)
+|   physician-fee-freeze = y
+|   |   synfuels-corporation-cutback = n
+|   |   |   aid-to-nicaraguan-contras = n : republican (10.69/2)
+|   |   |   aid-to-nicaraguan-contras = y : republican (9.11/0.05)
+|   |   synfuels-corporation-cutback = y
+|   |   |   crime = n : democrat (0.42/0)
+|   |   |   crime = y : democrat (10.82/0.08)
+
+Size of the tree : 29
+Max depth of tree: 4
+
+
+RandomTree
+==========
+
+physician-fee-freeze = n
+|   adoption-of-the-budget-resolution = n
+|   |   water-project-cost-sharing = n
+|   |   |   duty-free-exports = n : democrat (3.19/0.05)
+|   |   |   duty-free-exports = y : republican (1.09/0.08)
+|   |   water-project-cost-sharing = y
+|   |   |   handicapped-infants = n : democrat (4.64/0.09)
+|   |   |   handicapped-infants = y : democrat (5.8/0.05)
+|   adoption-of-the-budget-resolution = y
+|   |   education-spending = n
+|   |   |   handicapped-infants = n : democrat (65.09/1.22)
+|   |   |   handicapped-infants = y : democrat (135.05/0.62)
+|   |   education-spending = y
+|   |   |   crime = n : democrat (8.27/1.05)
+|   |   |   crime = y : democrat (11.51/0.14)
+physician-fee-freeze = y
+|   education-spending = n
+|   |   water-project-cost-sharing = n
+|   |   |   synfuels-corporation-cutback = n : republican (13.71/0.2)
+|   |   |   synfuels-corporation-cutback = y : democrat (0.17/0)
+|   |   water-project-cost-sharing = y
+|   |   |   synfuels-corporation-cutback = n : republican (6.95/2.23)
+|   |   |   synfuels-corporation-cutback = y : democrat (17.7/3.05)
+|   education-spending = y
+|   |   anti-satellite-test-ban = n
+|   |   |   aid-to-nicaraguan-contras = n : republican (117.35/8.89)
+|   |   |   aid-to-nicaraguan-contras = y : democrat (5.57/2.19)
+|   |   anti-satellite-test-ban = y
+|   |   |   mx-missile = n : republican (26.64/0)
+|   |   |   mx-missile = y : republican (12.28/0.09)
+
+Size of the tree : 31
+Max depth of tree: 4
+
+
+RandomTree
+==========
+
+physician-fee-freeze = n
+|   aid-to-nicaraguan-contras = n
+|   |   anti-satellite-test-ban = n
+|   |   |   crime = n : democrat (4.61/0.01)
+|   |   |   crime = y : democrat (21.38/0.11)
+|   |   anti-satellite-test-ban = y
+|   |   |   synfuels-corporation-cutback = n : republican (3.23/1.21)
+|   |   |   synfuels-corporation-cutback = y : democrat (3.49/0.02)
+|   aid-to-nicaraguan-contras = y
+|   |   crime = n : democrat (158.67/0.36)
+|   |   crime = y
+|   |   |   handicapped-infants = n : democrat (29.43/0.56)
+|   |   |   handicapped-infants = y : democrat (26.87/0.06)
+physician-fee-freeze = y
+|   export-administration-act-south-africa = n
+|   |   adoption-of-the-budget-resolution = n
+|   |   |   mx-missile = n : republican (57.61/1)
+|   |   |   mx-missile = y : democrat (1.52/0.01)
+|   |   adoption-of-the-budget-resolution = y
+|   |   |   synfuels-corporation-cutback = n : republican (1.08/0.36)
+|   |   |   synfuels-corporation-cutback = y : democrat (6.53/0.03)
+|   export-administration-act-south-africa = y
+|   |   synfuels-corporation-cutback = n
+|   |   |   adoption-of-the-budget-resolution = n : republican (74.74/0.34)
+|   |   |   adoption-of-the-budget-resolution = y : republican (24.54/1.82)
+|   |   synfuels-corporation-cutback = y
+|   |   |   mx-missile = n : republican (17.1/2.73)
+|   |   |   mx-missile = y : democrat (4.19/0.02)
+
+Size of the tree : 29
+Max depth of tree: 4
+
+
+RandomTree
+==========
+
+aid-to-nicaraguan-contras = n
+|   physician-fee-freeze = n
+|   |   anti-satellite-test-ban = n
+|   |   |   handicapped-infants = n : democrat (11.67/0.18)
+|   |   |   handicapped-infants = y : democrat (10.5/0.07)
+|   |   anti-satellite-test-ban = y
+|   |   |   synfuels-corporation-cutback = n : democrat (4.42/2.05)
+|   |   |   synfuels-corporation-cutback = y : democrat (7.4/0.09)
+|   physician-fee-freeze = y
+|   |   synfuels-corporation-cutback = n
+|   |   |   adoption-of-the-budget-resolution = n : republican (119.04/0.55)
+|   |   |   adoption-of-the-budget-resolution = y : republican (13.14/4.06)
+|   |   synfuels-corporation-cutback = y
+|   |   |   export-administration-act-south-africa = n : democrat (18.44/6.52)
+|   |   |   export-administration-act-south-africa = y : republican (18.39/3.75)
+aid-to-nicaraguan-contras = y
+|   physician-fee-freeze = n
+|   |   crime = n : democrat (159.65/1.1)
+|   |   crime = y
+|   |   |   handicapped-infants = n : democrat (31.37/1.18)
+|   |   |   handicapped-infants = y : democrat (19.61/0.14)
+|   physician-fee-freeze = y
+|   |   superfund-right-to-sue = n
+|   |   |   synfuels-corporation-cutback = n : republican (2.78/0.01)
+|   |   |   synfuels-corporation-cutback = y : democrat (4.57/2.05)
+|   |   superfund-right-to-sue = y
+|   |   |   mx-missile = n : republican (7.29/0)
+|   |   |   mx-missile = y : republican (6.73/0.4)
+
+Size of the tree : 29
+Max depth of tree: 4
+
+
+RandomTree
+==========
+
+el-salvador-aid = n
+|   physician-fee-freeze = n
+|   |   immigration = n
+|   |   |   crime = n : democrat (104.39/0)
+|   |   |   crime = y : democrat (14.12/0.54)
+|   |   immigration = y
+|   |   |   water-project-cost-sharing = n : democrat (55.91/2.26)
+|   |   |   water-project-cost-sharing = y : democrat (27.2/0.13)
+|   physician-fee-freeze = y
+|   |   water-project-cost-sharing = n
+|   |   |   synfuels-corporation-cutback = n : republican (6.03/0)
+|   |   |   synfuels-corporation-cutback = y : democrat (0.03/0)
+|   |   water-project-cost-sharing = y
+|   |   |   crime = n : democrat (2.15/0)
+|   |   |   crime = y : democrat (4.05/1.03)
+el-salvador-aid = y
+|   duty-free-exports = n
+|   |   adoption-of-the-budget-resolution = n
+|   |   |   synfuels-corporation-cutback = n : republican (105.59/0.83)
+|   |   |   synfuels-corporation-cutback = y : republican (30.12/7.87)
+|   |   adoption-of-the-budget-resolution = y
+|   |   |   physician-fee-freeze = n : democrat (25.84/0.12)
+|   |   |   physician-fee-freeze = y : republican (20.92/5.62)
+|   duty-free-exports = y
+|   |   physician-fee-freeze = n
+|   |   |   crime = n : democrat (11.64/0)
+|   |   |   crime = y : democrat (9.36/0.1)
+|   |   physician-fee-freeze = y
+|   |   |   anti-satellite-test-ban = n : democrat (5.83/2.67)
+|   |   |   anti-satellite-test-ban = y : republican (11.81/0)
+
+Size of the tree : 31
+Max depth of tree: 4
+
+Out of bag error: 0.0851
+
+
+
+Time taken to build model: 0 seconds
+
+=== Evaluation on training set ===
+
+Time taken to test model on training data: 0.02 seconds
+
+=== Summary ===
+
+Correctly Classified Instances         421               96.7816 %
+Incorrectly Classified Instances        14                3.2184 %
+Kappa statistic                          0.9324
+Mean absolute error                      0.0797
+Root mean squared error                  0.1649
+Relative absolute error                 16.8149 %
+Root relative squared error             33.8639 %
+Coverage of cases (0.95 level)         100      %
+Mean rel. region size (0.95 level)      66.8966 %
+Total Number of Instances              435     
+
+=== Detailed Accuracy By Class ===
+
+                 TP Rate  FP Rate  Precision  Recall   F-Measure  MCC      ROC Area  PRC Area  Class
+                 0,966    0,030    0,981      0,966    0,974      0,933    0,996     0,997     democrat
+                 0,970    0,034    0,948      0,970    0,959      0,933    0,996     0,994     republican
+Weighted Avg.    0,968    0,031    0,968      0,968    0,968      0,933    0,996     0,996     
+
+=== Confusion Matrix ===
+
+   a   b   <-- classified as
+ 258   9 |   a = democrat
+   5 163 |   b = republican
+
