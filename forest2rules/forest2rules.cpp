@@ -137,9 +137,8 @@ int main() {
 	cout << "Leitura concluida." << endl;
 	arq.close();
 
-	cout << "Numero de regras lidas: " << numeroDeRegras << endl << endl;
+	cout << endl << "Numero de regras lidas: " << numeroDeRegras << endl;
 
-	cout << endl << "Etiqueta da classe positiva: " << classePositiva << "." << endl;
 
 	// Pos-processamento
 	// Identificar features e atribuir indices aas mesmas
@@ -154,6 +153,9 @@ int main() {
 			if (variaveis[t.variavel] == 0)
 				variaveis[t.variavel] = indice ++;
 
+	cout << "Numero de features utilizadas: " << variaveis.size() << endl;
+
+	cout << "Etiqueta da classe positiva: " << classePositiva << "." << endl << endl;
 
 	cout << "Mapeamento de features originais para coordenadas binarias: " << endl;
 	map< string,set<string> > valores;
@@ -228,6 +230,6 @@ int main() {
 		}
 	}
 
-	system("pause");
+	//system("pause");
 	return 0;
 }
