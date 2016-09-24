@@ -84,34 +84,48 @@ class Resources:
 			print('Worker[%d]:%10s working: %s' % (worker.id, worker.name, worker.working))
 				
 class Item:
-	def __init__(self, id):
+	def __init__(self, id, start_tasks):
 		self.id = id
-		self.next_tasks_id = set([0])
-		self.last_tasks = []
+		self.next_tasks_id = set(start_tasks)
+		self.tasks_done_id = set()
 		self.current_task = None
 		
 	def update(self):
-		# search for a task
+		# check if the current task is done
 		if self.current_task != None and self.current_task.done():
 			# print('Updating Item[%d] current_task %s' % (self.id, self.current_task.description))
 			# print('Item[%2d] finishing Task[%d]' % (self.id, self.current_task.id))
-			self.last_tasks.append(self.current_task)
+			self.tasks_done_id.add(self.current_task.id)
 			self.next_tasks_id.remove(self.current_task.id)
-			for task_id in self.current_task.next_tasks_id:
-				self.next_tasks_id.add(task_id)
-			# print('Item[%d] next_tasks_id: ' % self.id, self.next_tasks_id)
+			# udpate the list of tasks ready to start
+			for taskA_id in self.tasks_done_id:
+				succA = TaskFactory.task_graph.successors(taskA_id)
+				for taskB_id in succA:
+					if taskB_id in self.next_tasks_id or taskB_id in self.tasks_done_id: continue
+					predB = set(TaskFactory.task_graph.predecessors(taskB_id))
+					if predB.issubset(self.tasks_done_id): 
+						self.next_tasks_id.add(taskB_id)
+					
+			# print('Item[%2d] next_tasks_id: ' % self.id, self.next_tasks_id)
 			self.current_task = None
 		
+	def start_next_task(self):
+		# try to start a task
 		if self.current_task == None:
-			for task_id in self.next_tasks_id:
+			# prioritizing the initialization of the longest tasks
+			tasks = [(TaskFactory.tasks[task_id].tproc, task_id) for task_id in self.next_tasks_id]
+			tasks = sorted(tasks)
+			tasks.reverse()
+			for tproc, task_id in tasks:
 				task = TaskFactory.get_task(task_id)
 				if(task != None):
 					machine, worker = task.current_resources
-					print('Starting, Item[%d], Task[%2d], Worker[%2d]:%10s, %4d seconds, Machine[%2d]:%s' % (self.id, task.id, worker.id, worker.name, task.tproc_start, machine.id, machine.name))
+					# print('Starting, Item[%d], Task[%2d], %4f, Worker[%2d], %4f, Machine[%2d]' % (self.id, task.id, task.tproc, worker.id, task.tproc_start, machine.id))
 					self.current_task = task
 					break
 		# print('Item[%d] Task[]%s' % (self.id, self.current_task))
-		
+
+	
 	def done(self):
 		return len(self.next_tasks_id) == 0
 					
@@ -140,7 +154,9 @@ class Task:
 		#print('Checking if Task is done')
 		if self.current_resources == None:
 			raise Exception('Trying to check a task that has not available resources.')
-		if self.tproc < TIMER - self.tproc_start:
+		# avoiding rounding errors
+		telapsed = TIMER - self.tproc_start
+		if abs(telapsed - self.tproc) < 0.01:
 			machine, worker = self.current_resources
 			machine.working = False
 			worker.working = False
@@ -172,6 +188,7 @@ class Task:
 		
 class TaskFactory:
 	tasks = {}
+	task_graph = None
 	
 	@staticmethod
 	def load():
@@ -185,10 +202,17 @@ class TaskFactory:
 		data = pd.read_csv('instances/tasks_graph.csv').values
 		for row in data:
 			task = TaskFactory.tasks[row[0]]
-			for task_id in row[1:]: 
+			for task_id in row[1:]:
 				if not pd.isnull(task_id):
 					task.add_next_task(TaskFactory.tasks[task_id])
-	
+		
+		# set task graph
+		G = nx.DiGraph()
+		for taskA in TaskFactory.tasks.values():
+			for taskB_id in taskA.next_tasks_id:
+				G.add_edge(taskA.id, taskB_id)
+		TaskFactory.task_graph = G
+		
 	@staticmethod
 	def get_task(task_id):
 		task = TaskFactory.tasks[task_id]
@@ -200,13 +224,8 @@ class TaskFactory:
 	
 	@staticmethod
 	def to_csv():
-		G = nx.DiGraph()
-		for taskA in TaskFactory.tasks.values():
-			for taskB_id in taskA.next_tasks_id:
-				G.add_edge(taskA.id, taskB_id)
-		
 		edges = dict(source=[], target=[])
-		for e in G.edges():
+		for e in TaskFactory.task_graph.edges():
 			edges['source'].append(e[0])
 			edges['target'].append(e[1])
 		
@@ -220,13 +239,23 @@ class Scheduler:
 		self.time_span = time_span
 		self.items = []
 		self.total_time = 0
+		
+		# get all tasks without predecessors
+		G = TaskFactory.task_graph
+		next_tasks_id = []
+		for task in G.nodes():
+			if len(G.predecessors(task)) > 0: continue
+			next_tasks_id.append(task)
+		
+		# creating items
 		for i in range(nitems):
-			self.items.append(Item(i))
+			self.items.append(Item(i, next_tasks_id))
 			
 	def execute(self):
 		global TIMER
 		TIMER = 0
 		MAXIT = self.time_span
+		niter = 0
 		nitems = 0
 		machine_efficiency = {}
 		worker_efficiency = {}
@@ -236,20 +265,28 @@ class Scheduler:
 			worker_efficiency[worker] = 0.0
 			
 		while len(self.items) > 0 and TIMER < MAXIT:
+			niter += 1
 			# print('----------------------------')
 			# print('Time Step %d' % TIMER)
+			
+			# update task status
 			for item in self.items:
 				item.update()
 				if item.done():
 					nitems += 1
 					self.items.remove(item)
 					print('Removing Item[%3d] at %3.2fh remaing %d items' % (item.id, TIMER/3600, len(self.items)))
+			
+			# start next tasks
+			for item in self.items:
+				item.start_next_task()
+				
 			for machine in Resources.machines.values():
 				if machine.working: machine_efficiency[machine] += 1
 			for worker in Resources.workers.values():
 				if worker.working: worker_efficiency[worker] += 1
 				
-			TIMER += 1
+			TIMER += 0.1
 			# time.sleep(0.1)
 			# Resources.status()
 		
@@ -257,9 +294,9 @@ class Scheduler:
 		print('\nCompleted %d items after %3.2f hours' % (nitems, self.total_time))
 		print('Efficiency')
 		for machine in Resources.machines.values():
-			print('%3.2f Machine[%d] %s' %(machine_efficiency[machine]/TIMER,machine.id,machine.name))
+			print('%3.2f Machine[%2d] %s' %(machine_efficiency[machine]/niter,machine.id,machine.name))
 		for worker in Resources.workers.values():
-			print('%3.2f Worker[%d] %s' %(worker_efficiency[worker]/TIMER,worker.id,worker.name))
+			print('%3.2f Worker[%2d] %s' %(worker_efficiency[worker]/niter,worker.id,worker.name))
 		
 # load resources (workers and machines)
 Resources.load()
@@ -269,7 +306,7 @@ Resources.load()
 TaskFactory.load()
 # TaskFactory.to_csv()
 
-scheduler = Scheduler(4, 120 * 3600)
+scheduler = Scheduler(1, 120 * 3600)
 scheduler.execute()
 
 # create scheduler
