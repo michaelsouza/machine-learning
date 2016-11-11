@@ -359,9 +359,10 @@ class Scheduler:
             print('%3.2f Worker[%2d] %s' %(worker_efficiency[worker]/niter,worker.id,worker.name))
             
         # plotting the solution
-        with open('markov_agent.log', 'w') as fid:
+        with open('markov_agent.csv', 'w') as fid:
+            fid.write('item,task,worker,tstart,tproc\n')
             for task in tasks:
-                fid.write('Item[%3d], Task[%2d], Worker[%2d], %.1f, [%.1f]\n' % (task.item.id, task.id, task.worker.id, task.time_start, task.processing_time))
+                fid.write('%d,%d,%d,%f,%f\n' % (task.item.id, task.id, task.worker.id, task.time_start, task.processing_time))
         workers = Resources.workers.values()
         fig, ax = plt.subplots()
         ax.set_xlim(0, TIMER/3600) # in hours
@@ -387,7 +388,7 @@ Resources.load()
 TaskFactory.load()
 # TaskFactory.to_csv()
 
-scheduler = Scheduler(5, 9 * 3600)
+scheduler = Scheduler(120, 9 * 3600)
 scheduler.execute()
 
 # create scheduler
